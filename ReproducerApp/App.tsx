@@ -1,117 +1,73 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import { useRef, useState } from 'react';
 import {
+  Button,
+  FlatList,
+  ListRenderItem,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
-  View,
+  View
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const data = [...Array(30)].map((_, i) => ({key: i, value: i}));
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const App = () => {
+  const [isOnMomentumScrollEndCalled, setIsOnMomentumScrollEndCalled] =
+    useState(false);
+  const flatListRef = useRef<FlatList<{key: number; value: number}>>(null);
+  const renderItem: ListRenderItem<{key: number; value: number}> = ({item}) => {
+    return (
+      <View style={style.item}>
+        <Text>{item.value}</Text>
+      </View>
+    );
+  };
 
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+  const scrollToIndex = () => {
+    flatListRef.current?.scrollToIndex({index: 10, animated: true});
+  };
 
-function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const scrollToOffset = () => {
+    flatListRef.current?.scrollToOffset({offset: 100, animated: true});
+  };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const onMomentumScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    console.log('onMomentumScrollEnd CALLED');
+    setIsOnMomentumScrollEndCalled(true);
+  };
+
+  const resetOnMomentumScrollEndCalled = () => {
+    setIsOnMomentumScrollEndCalled(false);
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <SafeAreaView>
+      <FlatList
+        ref={flatListRef}
+        horizontal
+        data={data}
+        renderItem={renderItem}
+        onMomentumScrollEnd={onMomentumScrollEnd}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+      <Button title="Scroll to index 10" onPress={scrollToIndex} />
+      <Button title="Scroll to offset 100" onPress={scrollToOffset} />
+      <Button title="Reset" onPress={resetOnMomentumScrollEndCalled} />
+      <Text>
+        is onMomentumScrollEnd called :
+        {isOnMomentumScrollEndCalled ? 'yes' : 'no'}
+      </Text>
     </SafeAreaView>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+const style = StyleSheet.create({
+  item: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'blueviolet',
+    justifyContent: 'center',
   },
 });
 
